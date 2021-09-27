@@ -26,7 +26,11 @@
   "dependencies": {
     "@types/axios": "^0.14.0",
     "@types/readline-sync": "^1.4.4",
+    "@types/retry": "^0.12.1",
     "axios": "^0.21.4",
-    "readline-sync": "^1.4.10"
+    "axios-retry": "^3.1.9",
+    "colors": "^1.4.0",
+    "readline-sync": "^1.4.10",
+    "retry": "^0.13.1"
   }
 }

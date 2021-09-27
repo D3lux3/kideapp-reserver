@@ -10,6 +10,7 @@ export interface ProductType {
 
 export interface TicketType {
     ticketId: string,
+    name: string,
     price: number,
     availability: number,
 }

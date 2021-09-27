@@ -5,7 +5,8 @@ type TokenFields = { access_token: unknown, token_type: unknown };
 type TicketVariantFields = {
     inventoryId: unknown,
     pricePerItem: unknown,
-    availability: unknown
+    availability: unknown,
+    name: unknown
 };
 
 type ProductFields = {
@@ -39,14 +40,15 @@ const toTicketTypes = (object: TicketVariantFields[]): TicketType[] => {
     return object.map((o) => parseTicketVariant(o));
 };
 
-const parseTicketVariant = ({ inventoryId, pricePerItem, availability }: TicketVariantFields): TicketType => {
-    if (!isString(inventoryId) || !isNumber(pricePerItem) || !isNumber(availability)) {
+const parseTicketVariant = ({ inventoryId, pricePerItem, availability, name }: TicketVariantFields): TicketType => {
+    if (!isString(inventoryId) || !isNumber(pricePerItem) || !isNumber(availability) || !isString(name)) {
         throw new Error("Ticket variant is invalid");
     }
     return {
         ticketId: inventoryId,
         price: pricePerItem,
-        availability: availability
+        availability: availability,
+        name: name
     };
 };
 
