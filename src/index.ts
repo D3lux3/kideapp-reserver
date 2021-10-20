@@ -6,7 +6,6 @@ import { toBearerToken, toNewProduct } from './utils';
 import { BearerToken, ProductType, TicketType } from './types';
 import colors from 'colors';
 
-
 const getBearerToken = async (): Promise<BearerToken> => {
     const email = readline.question(colors.bold('Please enter your Kide.app login email: '));
     const password = readline.question(colors.bold('Please enter your password: '), { hideEchoBack: true });
@@ -37,7 +36,6 @@ const getProducts = async (): Promise<ProductType> => {
         randomize: true,
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     operation.attempt(async (currentAttempt) => {
         console.log(colors.blue(`*Trying to fetch tickets: ${currentAttempt} attempt*`));
         try {
@@ -111,7 +109,6 @@ const reserve = (token: BearerToken, tickets: TicketType[]): void => {
         toCancel: []
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     operation.attempt(async (currentAttempt) => {
         console.log(colors.blue(`*Trying to reserve selected tickets: ${currentAttempt} attempt*`));
         try {
@@ -134,7 +131,6 @@ const init = async (): Promise<void> => {
     const token = await getBearerToken();
     const products = await getProducts();
     const tickets = selectTickets(products);
-
     void reserve(token, tickets);
 };
 
