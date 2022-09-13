@@ -2,14 +2,15 @@
 import readline from 'readline-sync';
 import axios, { AxiosError } from 'axios';
 import retry, { RetryOperation } from 'retry';
-
-import { toBearerToken, toNewProduct } from './utils';
+import * as dotenv from 'dotenv';
+import { isString, toBearerToken, toNewProduct } from './utils';
 import { BearerToken, ProductType, TicketType } from './types';
 import colors from 'colors';
+dotenv.config();
 
 const getBearerToken = async (): Promise<BearerToken> => {
-    const email = readline.question(colors.bold('Please enter your Kide.app login email: '));
-    const password = readline.question(colors.bold('Please enter your password: '), { hideEchoBack: true });
+    const email = process.env.EMAIL;
+    const password = process.env.PASSWORD;
     const data = `client_id=56d9cbe22a58432b97c287eadda040df&grant_type=password&password=${password}&rememberMe=true&username=${email}`;
     try {
         const response = await axios.post("https://auth.kide.app/oauth2/token", data);
@@ -27,7 +28,10 @@ const getBearerToken = async (): Promise<BearerToken> => {
 
 
 const getProducts = async (): Promise<ProductType> => {
-    const askProductURI = readline.question('Enter Kide.app link: ');
+    const askProductURI = process.env.KIDELINK;
+    if (!askProductURI || !isString(askProductURI) || askProductURI.length <= 0) {
+        throw new Error(colors.red("Link is scuffed"));
+    }
     const productURI = askProductURI.slice(askProductURI.lastIndexOf("/") + 1, askProductURI.length);
 
     const operation: RetryOperation = retry.operation({
@@ -70,7 +74,7 @@ const selectTickets = (products: ProductType): TicketType[] => {
         console.log('');
     });
 
-    const selectedIndexes = readline.question('Enter index of wanted ticket');
+    const selectedIndexes = readline.question('Enter index of wanted ticket: ');
     console.log('');
 
 
@@ -92,7 +96,7 @@ const reserve = (token: BearerToken, ticket: TicketType): void => {
     const operation: RetryOperation = retry.operation({
         forever: true,
         minTimeout: 100,
-        maxTimeout: 300,
+        maxTimeout: 200,
         randomize: true,
 
     });
