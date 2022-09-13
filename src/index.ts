@@ -91,8 +91,8 @@ const reserve = (token: BearerToken, ticket: TicketType): void => {
 
     const operation: RetryOperation = retry.operation({
         forever: true,
-        minTimeout: 2000,
-        maxTimeout: 5000,
+        minTimeout: 100,
+        maxTimeout: 300,
         randomize: true,
 
     });
