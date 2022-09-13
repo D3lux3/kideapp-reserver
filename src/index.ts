@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-misused-promises */
 import readline from 'readline-sync';
 import axios, { AxiosError } from 'axios';
 import retry, { RetryOperation } from 'retry';
@@ -28,7 +29,7 @@ const getBearerToken = async (): Promise<BearerToken> => {
 const getProducts = async (): Promise<ProductType> => {
     const askProductURI = readline.question('Enter Kide.app link: ');
     const productURI = askProductURI.slice(askProductURI.lastIndexOf("/") + 1, askProductURI.length);
-  
+
     const operation: RetryOperation = retry.operation({
         forever: true,
         minTimeout: 400,
@@ -48,7 +49,7 @@ const getProducts = async (): Promise<ProductType> => {
             } else {
                 throw new Error(colors.red("Ticket fetch error"));
             }
-            
+
         } catch (e) {
             if (operation.retry((e as Error))) { return; }
             return;
@@ -69,12 +70,11 @@ const selectTickets = (products: ProductType): TicketType[] => {
         console.log('');
     });
 
-    const selectedIndexes = readline.question('Enter indexes of tickets wanted seperated by a comma (",") OR select all tickets by leaving the field empty: ');
+    const selectedIndexes = readline.question('Enter index of wanted ticket');
     console.log('');
 
-    const selectedTickets = selectedIndexes.length === 0
-        ? products.tickets
-        : products.tickets.filter((_, index) => selectedIndexes.split('').includes(index.toString()));
+
+    const selectedTickets = products.tickets.filter((_, index) => index.toString() === selectedIndexes);
 
     console.log('Selected tickets: ');
     selectedTickets.forEach((ticket) => {
@@ -86,37 +86,34 @@ const selectTickets = (products: ProductType): TicketType[] => {
 
 };
 
-const reserve = (token: BearerToken, tickets: TicketType[]): void => {
+const reserve = (token: BearerToken, ticket: TicketType): void => {
     const bear = token.token_type + " " + token.access_token;
 
     const operation: RetryOperation = retry.operation({
         forever: true,
-        minTimeout: 400,
-        maxTimeout: 1000,
+        minTimeout: 2000,
+        maxTimeout: 5000,
         randomize: true,
+
     });
 
     const data = {
-        toCreate: tickets.map(m =>
-        (
-            {
-                "inventoryId": m.ticketId,
-                "quantity": 1,
-                "productVariantUserForm": null
-            }
-
-        )),
+        toCreate: [{
+            "inventoryId": ticket.ticketId,
+            "quantity": 1,
+            "productVariantUserForm": null,
+        }],
         toCancel: []
     };
 
     operation.attempt(async (currentAttempt) => {
         console.log(colors.blue(`*Trying to reserve selected tickets: ${currentAttempt} attempt*`));
         try {
-            const res = await axios.post("https://api.kide.app/api/reservations/batched", data, { headers: { 'Authorization': bear } });
+            const res = await axios.post("https://api.kide.app/api/reservations", data, { headers: { 'Authorization': bear } });
             if (res.status === 400) {
                 throw new Error(colors.red("Couldn't reserve ticket, trying again."));
             } else if (res.status === 200) {
-                console.log(colors.green(colors.bold(`Successfully ${data.toCreate.length} reserved tickets!`)));
+                console.log(colors.green(colors.bold(`Successfully reserved ticket!`)));
             } else {
                 throw new Error(colors.red("Unexpected error"));
             }
@@ -131,7 +128,7 @@ const init = async (): Promise<void> => {
     const token = await getBearerToken();
     const products = await getProducts();
     const tickets = selectTickets(products);
-    void reserve(token, tickets);
+    void reserve(token, tickets[0]);
 };
 
 void init();
